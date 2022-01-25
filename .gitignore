@@ -31,3 +31,5 @@
 *.app
 
 *.bin
+
+cmake-build-debug/
