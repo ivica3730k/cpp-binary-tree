@@ -139,11 +139,5 @@ private:
 
 };
 
-/*
-int main(){
-    Tree a = Tree();
-    a.insert(2,"Ivica");
 
-    return 0;
-}
- */
+
