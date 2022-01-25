@@ -9,10 +9,9 @@ struct Node {
     Node *right = nullptr;
 };
 
-template<class T>
 class Tree {
 public:
-    void insert(int key, T value) {
+    void insert(int key, std::string value) {
         if (this->rootNode != nullptr) {
             this->insert(key, value, this->rootNode);
         } else {
@@ -40,67 +39,22 @@ public:
         return &node->value;
     }
 
-    void remove(int key) {
-        remove(key, rootNode);
+    Node *remove(int key) {
+        return (deleteNode(rootNode, key));
     }
 
-    Node *remove(int key, Node *node) {
-        if (node == nullptr) {
-            return this->rootNode;
-        }
-        if (key < node->key) {
-            // go left
-            node->left = remove(key, node->left);
-        } else if (key > node->key) {
-            // go right
-            node->right = remove(key, rootNode->right);
-        } else {
-            // found the node
-            if (rootNode->left == nullptr && rootNode->right == nullptr) {
-                rootNode = nullptr;
-            } else if (rootNode->left == nullptr) {
-                Node *tmp = rootNode->right;
-                free(rootNode);
-                return tmp;
-            } else if (rootNode->right == nullptr) {
-                Node *tmp = rootNode->left;
-                free(rootNode);
-                return tmp;
-            } else {
-                Node *tmp = this->minValueNode(rootNode->right);
-                rootNode->key = tmp->key;
-                rootNode->value = tmp->value;
-                rootNode->right = remove(tmp->key, rootNode->right);
-            }
-        }
-        return rootNode;
+    Node *findMinNode(Node *root) {
+        while(root->left != nullptr) root = root->left;
+        return root;
     }
 
-    Node *minValueNode(Node *node) {
-        Node *current = node;
-
-        /* loop down to find the leftmost leaf */
-        while (current && current->left != nullptr)
-            current = current->left;
-
-        return current;
-    }
-
-    void destroy_all() {
-        // destroy the whole node
-        this->destroy(this->rootNode);
-    }
-
-    void removeIf() {
-
-    }
 
 private:
 
     Node *rootNode = nullptr;
 
 
-    void insert(int key, T value, Node *node) {
+    void insert(int key, std::string value, Node *node) {
         //insert node into tree, with key and its value
 
         if (key < node->key) {
@@ -145,5 +99,51 @@ private:
         }
     }
 
+    /* Delete Node in Binary Search Tree */
+    Node *deleteNode(Node *root, int key) {
+        if (root == nullptr) {
+            return root;
+        } else if (key < root->key) {
+            // key is less than root, go left
+            root->left = deleteNode(root->left, key);
+        } else if (key > root->key) {
+            // key is more than root, go right
+            root->right = deleteNode(root->right, key);
+        } else {
+            //we got our node
+            if (root->left == nullptr && root->right == nullptr) {
+                //if it has no children just delete it
+                delete root;
+                root = nullptr;
+            } else if (root->left == nullptr) {
+                // if it has no no left (smaller) node children, set bigger as the root
+                Node *temp = root;
+                root = root->right;
+                delete temp;
+            } else if (root->right == nullptr) {
+                // if it has no right (bigger) node children, set smaller as root
+                Node *temp = root;
+                root = root->left;
+                delete temp;
+            } else {
+                // if it has both children
+                Node *min = findMinNode(root->right); //get the minimum node on bigger side
+                root->key = min->key; // set root key to minimum key from right side
+                root->value = min->value; // set root value to minimum value from the right side
+                root->right = deleteNode(root->right, min->key);
+            }
+        }
+        return root;
+    }
+
 
 };
+
+/*
+int main(){
+    Tree a = Tree();
+    a.insert(2,"Ivica");
+
+    return 0;
+}
+ */
