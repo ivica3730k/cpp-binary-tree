@@ -11,6 +11,12 @@ struct Node {
 
 class Tree {
 public:
+    /**
+     * @brief Adds the data point into binary tree with specified key and value
+     *
+     * @param key Key for the data point
+     * @param value Value to store
+     */
     void insert(int key, std::string value) {
         if (this->rootNode != nullptr) {
             this->insert(key, value, this->rootNode);
@@ -21,16 +27,12 @@ public:
         }
     }
 
-    void destroy(Node *node) {
-        //destroy starting from specified node
-        if (node != nullptr) {
-            this->destroy(node->left);
-            this->destroy(node->right);
-            delete node;
-        }
-    }
-
-
+    /**
+     * @brief Retrieves the data associated with an input key
+     *
+     * @param key Key to lookup to retrieve the data contents
+     * @return std::string* Pointer to the data
+     */
     std::string *lookup(int key) {
         Node *node = this->search(key, rootNode);
         if (node == nullptr) {
@@ -39,24 +41,52 @@ public:
         return &node->value;
     }
 
+    /**
+     * @brief Removes the datapoint from the tree with specified key
+     *
+     * @param key Key of the datapoint to delete from binary tree
+     * @return Node* Deleted node
+     */
     Node *remove(int key) {
-        return (deleteNode(rootNode, key));
+        return (deleteNode(key, rootNode));
     }
 
-    Node *findMinNode(Node *root) {
-        while(root->left != nullptr) root = root->left;
-        return root;
+    /**
+     * @brief Destroys the whole binary tree
+     *
+     */
+    void destroy() {
+        this->destroy(this->rootNode);
     }
-
 
 private:
-
     Node *rootNode = nullptr;
 
+    /**
+     * @brief Destroys the tree starting from specified point.
+     *
+     * Can be called on rootNode to delete thw whole tree
+     *
+     * @param node Node to start deleting from
+     */
+    void destroy(Node *node) {
+        if (node != nullptr) {
+            this->destroy(node->left);
+            this->destroy(node->right);
+            delete node;
+        }
+    }
 
+    /**
+     * @brief Adds the data point into the binary tree, starting from the provided node
+     *
+     * Can be called on rootNode to start inserting data from the top of the binary tree
+     *
+     * @param key Key of the datapoint
+     * @param value Data to store
+     * @param node Node to start inserting at
+     */
     void insert(int key, std::string value, Node *node) {
-        //insert node into tree, with key and its value
-
         if (key < node->key) {
             if (node->left != nullptr) {
                 this->insert(key, value, node->left);
@@ -76,68 +106,93 @@ private:
                 node->right->value = value;
                 node->right->left = nullptr;
                 node->right->right = nullptr;
-
             }
         } else {
             node->value = value;
         }
-
     }
 
-    Node *search(int key, Node *leaf) {
-        if (leaf != nullptr) {
-            if (key == leaf->key) {
-                return leaf;
+    /**
+     * @brief Search the binary tree for a node with associated key
+     *
+     * Can be called on rootNode to search the whole binary tree
+     *
+     * @param key Key of the datapoint to retrieve
+     * @param node node to start the lookup at
+     * @return Node* Node matching the key provided in the search parameter
+     */
+    Node *search(int key, Node *node) {
+        if (node != nullptr) {
+            if (key == node->key) {
+                return node;
             }
-            if (key < leaf->key) {
-                return search(key, leaf->left);
+            if (key < node->key) {
+                return search(key, node->left);
             } else {
-                return search(key, leaf->right);
+                return search(key, node->right);
             }
         } else {
             return nullptr;
         }
     }
 
-    /* Delete Node in Binary Search Tree */
-    Node *deleteNode(Node *root, int key) {
-        if (root == nullptr) {
-            return root;
-        } else if (key < root->key) {
-            // key is less than root, go left
-            root->left = deleteNode(root->left, key);
-        } else if (key > root->key) {
-            // key is more than root, go right
-            root->right = deleteNode(root->right, key);
-        } else {
-            //we got our node
-            if (root->left == nullptr && root->right == nullptr) {
-                //if it has no children just delete it
-                delete root;
-                root = nullptr;
-            } else if (root->left == nullptr) {
-                // if it has no no left (smaller) node children, set bigger as the root
-                Node *temp = root;
-                root = root->right;
-                delete temp;
-            } else if (root->right == nullptr) {
-                // if it has no right (bigger) node children, set smaller as root
-                Node *temp = root;
-                root = root->left;
-                delete temp;
-            } else {
-                // if it has both children
-                Node *min = findMinNode(root->right); //get the minimum node on bigger side
-                root->key = min->key; // set root key to minimum key from right side
-                root->value = min->value; // set root value to minimum value from the right side
-                root->right = deleteNode(root->right, min->key);
-            }
-        }
-        return root;
+    /**
+     * @brief Find the minimum node on from the startpoint node provided
+     *
+     * Used for deleting the node from the tree
+     *
+     * @param node starting node
+     * @return Node* minimum node found
+     */
+    Node *findMinNode(Node *node) {
+        while (node->left != nullptr)
+            node = node->left;
+        return node;
     }
 
-
+    /**
+     * @brief Deletes the node from the binary tree
+     *
+     * Can be called with rootNode in the parameter to start the lookup
+     * for deletion on the whole tre
+     *
+     * @param key Key of the datapoint to delete
+     * @param node Node to start lookup for deletion on
+     * @return Node*
+     */
+    Node *deleteNode(int key, Node *&node) {
+        if (node == nullptr) {
+            return node;
+        } else if (key < node->key) {
+            // key is less than node, go left
+            node->left = deleteNode(key, node->left);
+        } else if (key > node->key) {
+            // key is more than node, go right
+            node->right = deleteNode(key, node->right);
+        } else {
+            // we got our node
+            if (node->left == nullptr && node->right == nullptr) {
+                // if it has no children just delete it
+                delete node;
+                node = nullptr;
+            } else if (node->left == nullptr) {
+                // if it has no no left (smaller) node children, set bigger as the node
+                Node *temp = node->right;
+                delete node;
+                node = temp;
+            } else if (node->right == nullptr) {
+                // if it has no right (bigger) node children, set smaller as node
+                Node *temp = node->left;
+                delete node;
+                node = temp;
+            } else {
+                // if it has both children
+                Node *min = findMinNode(node->right); // get the minimum node on bigger side
+                node->key = min->key;                 // set node key to minimum key from right side
+                node->value = min->value;             // set node value to minimum value from the right side
+                node->right = deleteNode(min->key, node->right);
+            }
+        }
+        return node;
+    }
 };
-
-
-
